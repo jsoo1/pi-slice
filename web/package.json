@@ -1,0 +1,24 @@
+{
+  "name": "pi-slice",
+  "version": "0.1.0",
+  "description": "\"Web app for pi-slice, your friendly Pi-Proxy\"",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pi-slice/pi-slice.git"
+  },
+  "keywords": [
+    "raspberry-pi"
+  ],
+  "author": "Pi-Slice",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pi-slice/pi-slice/issues"
+  },
+  "homepage": "https://github.com/pi-slice/pi-slice#readme"
+}

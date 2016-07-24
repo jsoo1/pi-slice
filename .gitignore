@@ -1,6 +1,13 @@
+# MacOS Stuff
 .DS_Store
+
+# Python stuff
 ssh_config.py
 *.pyc
 build/
 dist/
 *.egg-info
+
+# Node stuff
+node_modules
+.env

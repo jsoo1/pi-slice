@@ -4,3 +4,15 @@ ssh_config.py
 build/
 dist/
 *.egg-info
+web/.gitignore
+/target
+/classes
+/checkouts
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+.hgignore
+.hg/

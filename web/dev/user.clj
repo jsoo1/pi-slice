@@ -1,6 +1,8 @@
 (ns user
   (:require [clojure.tools.namespace.repl :as tnr]
-            [proto-repl.saved-values]))
+            [proto-repl.saved-values]
+            [clojure.repl :refer [doc source]]
+            [defun :refer [defun]]))
 
 (defn start
   []

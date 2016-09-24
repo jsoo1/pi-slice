@@ -13,6 +13,6 @@ pom.xml.asc
 *.jar
 *.class
 /.lein-*
-/.nrepl-port
+.nrepl-port
 .hgignore
 .hg/

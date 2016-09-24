@@ -1,13 +1,12 @@
 (ns user
-  (:require clojure.tools.namespace.repl
-            clojure.test
-            [clojure.repl :refer :all]
-            [proto-repl.saved-values]
-            web.core
-            defun))
+  (:require [clojure.tools.namespace.repl :as tnr]
+            [proto-repl.saved-values]))
 
+(defn start
+  []
+  (println "Start completed"))
 
 (defn reset []
-  (clojure.tools.namespace.repl/refresh))
+  (tnr/refresh :after 'user/start))
 
-(println "web.core REPL Leiningen project started")
+(println "proto-repl-pi-slice dev/user.clj loaded.")

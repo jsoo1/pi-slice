@@ -1,6 +1,6 @@
 (ns boot.boot-build
-  (require [boot.core :as core]
-           [boot.task.built-in :as task]))
+  (:require [boot.core :as core]
+            [boot.task.built-in :as task]))
 
 (core/deftask build
   "Build my project."

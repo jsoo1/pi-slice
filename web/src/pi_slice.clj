@@ -1,14 +1,21 @@
 (ns pi-slice
-  (:gen-class))
+  (:require [org.httpkit.server :refer :all]
+            [ring.middleware.reload :refer [wrap-reload]]
+            [defun :refer [defun]]))
 
-(require '[defun :refer [defun]])
+(defun handler
+  [request]
+  (with-channel request channel
+    (if (websocket? channel)
+      (on-receive channel (fn received-callback [data]
+                            (send! channel data)))
+      (send! channel {:status 200
+                      :headers {"Content Type" "text/plain"}
+                      :body "Long-polling?"}))))
 
-(defn -main
+(defn dev-app
+  "The whole dev app"
   []
-  (println "Hello World"))
+  (println "Starting http-kit on port 3030 under symbol 'server'")
 
-(defun my-print
-  "Print different things for :user, :admin or other"
-  ([:user] (println "Hello :user"))
-  ([:admin] (println "Hello :admin"))
-  ([other] (str "Hello " other)))
+  (run-server (wrap-reload handler {:port 9999})))

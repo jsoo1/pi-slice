@@ -1,8 +1,11 @@
 (ns user
   (:require [clojure.tools.namespace.repl :as tnr]
             [proto-repl.saved-values]
-            [clojure.repl :refer [doc source]]
-            [defun :refer [defun]]))
+            [clojure.repl :refer [doc source apropos]]
+            [clojure.pprint :refer [pprint]]
+            [defun :refer [defun]]
+            [pi-slice :refer :all]
+            [pi-spec :refer :all]))
 
 (defn start
   []

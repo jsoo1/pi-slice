@@ -1,7 +1,11 @@
 (set-env!
-  :resource-paths #{"src"}
-  :dependencies '[[defun "0.3.0-alapha"]
-                  [proto-repl "0.3.1"]])
+  :resource-paths #{"src" "spec"}
+  :dependencies '[[org.clojure/clojure "1.9.0-alpha12"]
+                  [defun "0.3.0-alapha"]
+                  [ring/ring-core "1.5.0"]
+                  [ring/ring-devel "1.6.0-beta6"]
+                  [http-kit "2.2.0"]
+                  [clj-ssh "0.5.14"]])
 
 (task-options!
   pom {:project 'pi-slice
@@ -20,11 +24,13 @@
   (println "Dev profile running")
   (set-env!
     :init-ns 'user
-    :source-paths #(into % ["dev" "src"])
+    :source-paths #(into % ["dev" "src" "spec"])
     :dependencies #(into % '[[org.clojure/tools.namespace "0.2.11"]
-                             [defun "0.3.0-alapha"]]))
+                             [proto-repl "0.3.1"]
+                             [clj-ssh "0.5.14"]]))
 
   (require 'clojure.tools.namespace.repl)
   (eval '(apply clojure.tools.namespace.repl/set-refresh-dirs
            (get-env :directories)))
   identity)
+

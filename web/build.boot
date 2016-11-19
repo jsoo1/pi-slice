@@ -1,9 +1,12 @@
 (set-env!
   :resource-paths #{"src" "spec"}
-  :dependencies '[[org.clojure/clojure "1.9.0-alpha12"]
+  :dependencies '[[org.clojure/clojure "1.9.0-alpha13"]
+                  [org.clojure/core.async "0.2.395"]
+                  [com.taoensso/timbre "4.7.4"]
                   [defun "0.3.0-alapha"]
                   [ring/ring-core "1.5.0"]
                   [ring/ring-devel "1.6.0-beta6"]
+                  [stylefruits/gniazdo "1.0.0"]
                   [http-kit "2.2.0"]
                   [clj-ssh "0.5.14"]])
 

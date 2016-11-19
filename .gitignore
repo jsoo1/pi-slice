@@ -17,7 +17,10 @@ pom.xml.asc
 .hgignore
 .hg/
 
-#Tags
+# Env Config
+conf/
+
+# Tags
 GPATH
 GRTAGS
 GSYMS

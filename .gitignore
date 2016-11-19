@@ -16,3 +16,9 @@ pom.xml.asc
 .nrepl-port
 .hgignore
 .hg/
+
+#Tags
+GPATH
+GRTAGS
+GSYMS
+GTAGS

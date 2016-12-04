@@ -1,27 +1,33 @@
+# Mac stuff
 .DS_Store
+
+# Python Config Files
 ssh_config.py
 *.pyc
 build/
 dist/
 *.egg-info
-web/.gitignore
 /target
 /classes
 /checkouts
+
+# CLojure Env Config
+conf/
+
+# Lein And REPL Setup
 pom.xml
 pom.xml.asc
 *.jar
 *.class
 /.lein-*
 .nrepl-port
-.hgignore
-.hg/
 
-# Env Config
-conf/
-
-# Tags
+# GTags
 GPATH
 GRTAGS
 GSYMS
 GTAGS
+
+# Editor Tools Config:w
+.hgignore
+.hg/

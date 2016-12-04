@@ -1,0 +1,33 @@
+* Welcome to the slice of pi, a set of utilities to pipe ssh streams to and from a client.
+
+There are a few limited goals of this project:
+- The primary goal is to let a new developer quickly work on their rpi remotely from within a NAT.
+This will be easy in the Clojure sense of the word, with all hope.
+- It will hopefully also provide some simple libraries for ssh config that wrap the current clj-ssh library:
+  - Currently, clj-ssh exposes java PipedInputStreams for channel shell sessions.
+    -My goal is to make this potentially more idiomatic clojure or provide transducable pipes.
+  - Inside you'll also find some utilities for ssh setups in a unified manner
+    - (ie, more complete than the ssh-agent/channel/session currently provided)
+
+** Entry points
+For web service, check pi-slice.clj.
+
+* Work log and notes for contributors:
+** TODO Spec??
+
+** DONE Use reactive streams for channels?
+  CLOSED: [2016-11-30 Wed 22:32]
+  :LOGBOOK:
+  CLOCK: [2016-11-28 Mon 18:50]
+  Research atoms as stream source.
+  :END:
+
+*** Do the research:
+- Can I use atoms?
+- beicon for streams? ReactiveX? (I kinda like beicon)
+- Wait, core.async is basically perfect, nevermind
+
+** TODO Implement channel handlers with core.async
+
+*** TODO Understand the statefulness of jsch.Channels
+   with with-channel-connection and otherwise.

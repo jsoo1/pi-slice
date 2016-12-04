@@ -14,7 +14,7 @@ dist/
 # CLojure Env Config
 conf/
 
-# Lein And REPL Setup
+# Leiningen And REPL Setup
 pom.xml
 pom.xml.asc
 *.jar
@@ -31,3 +31,6 @@ GTAGS
 # Editor Tools Config:w
 .hgignore
 .hg/
+
+# Log Files
+*.log

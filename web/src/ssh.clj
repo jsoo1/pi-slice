@@ -2,64 +2,64 @@
   (:require [clj-ssh.ssh :as jsch]
             [clojure.core.async :as a :refer [chan thread >! <! >!! <!!
                                               close! timeout go go-loop]]
-            [clojure.java.io :as io]
+            [clojure.spec :as s]
             [taoensso.timbre :as timbre
              :refer [log trace debug info warn error fatal report logf tracef
                      debugf infof warnf errorf fatalf reportf spy get-env]]
             [util :as u]))
 
-;; SSH state tracking atoms
-;; TODO Determine if really needed as the implementation might be out of scope.
-;; Else, implement them.
-;; (def agents
-;;   ^{:doc "{jsch/Agent #{jsch/Session}}
-;; A map of jsch/Agents to a set of jsch/Sessions using the associated agent."}
-;;   (atom {}))
-;; (def connections
-;;   ^{:doc "{jsch/Session #{jsch/channel}}
-;; A map of jsch/Sessions to a set of jsch/Channels using the associated session."}
-;;   (atom {}))
+;; Host
+(s/def ::host string?)
+;; Agent Options
+(s/def ::use-system-ssh-agent boolean?)
+(s/def ::agent-options
+  (s/keys :opt-un [::use-system-ssh-agent]))
+;; Identity Options
+(s/def ::private-key-path string?)
+(s/def ::passphrase bytes?)
+(s/def ::id-options
+  (s/keys :opt-un [::private-key-path ::passphrase]))
+;; Session Options
+(s/def ::port integer?)
+(s/def ::username string?)
+(s/def ::strict-host-key-checking keyword?)
+(s/def ::server-alive-interval integer?)
+(s/def ::session-options
+  (s/keys* :req-un [::username]
+           :opt-un [::port ::server-alive-interval ::strict-host-key-checking]))
+;; All Together in a configuration map
+(s/def ::conf-map
+  (s/keys :req [::host ::session-options]
+          :opt [::agent-options ::id-options]))
 
 (defn eval-config
-  "conf-path->
-      {:host String
-      :agent-options {:use-system-ssh-agent bool}
-      :id-options {:private-key-path String :passphrase ByteArray}
-      :session-options {:port int
-                        :username String
-                        :strict-host-key-checking keyword
-                        :server-alive-interval int}}"
+  "conf-path->conf-map"
   [conf-path]
   (->> conf-path
        (str (System/getProperty "user.dir"))
        (slurp)
        (read-string)
-       (#(do (debug (str "Read config: " conf-path)) %))
+       (do (debug "Read config:" conf-path))
        (eval)))
 
 (defn session-from
   "conf map->jsch.Session"
-  [{:keys [agent-options id-options host session-options]}]
-  (let [agent (doto (jsch/ssh-agent #dbg agent-options)
-                (jsch/add-identity #dbg id-options))
+  [{:keys [:pi-ssh/agent-options :pi-ssh/id-options
+           :pi-ssh/host :pi-ssh/session-options]}]
+  (let [agent (doto (jsch/ssh-agent)
+                (jsch/add-identity id-options))
         ;; Unfortunately, clj-ssh does not accept server-alive-interval
         ;; as an option. So we pull all the stuff out here to provide a
         ;; unified API. This also allows reasonable default values...
-        {port ::port
-         username ::username
-         strict-host-key-checking ::strict-host-key-checking
-         server-alive-interval ::server-alive-interval} session-options]
+        {:keys [:port :username :strict-host-key-checking
+                :server-alive-interval]} session-options]
     (doto (jsch/session agent
                         host
-                        {::port (or port 22)
-                         ::username (or username "")
-                         ::strict-host-key-checking (or strict-host-key-checking
+                        {:port (or port 22)
+                         :username (or username "")
+                         :strict-host-key-checking (or strict-host-key-checking
                                                        true)})
       (.setServerAliveInterval (or server-alive-interval 30000)))))
-
-(defn print-do
-  [x]
-  (do (clojure.pprint/pprint x) x))
 
 (defn run-in-channel
   "Takes a session and a continuation: (fn \"handler\" [in out])
@@ -78,15 +78,6 @@
            ;; Update the state of the connections
            (handler in out)))))))
 
-(defn slurp-stream
-  "[stream, (optional)size]->java Array<Byte> of length size
-  Creates a realized buffer array of all input from a stream."
-  ([stream] (slurp-stream stream 1024))
-  ([stream size]
-   (let [buffer (make-array Byte/TYPE size)]
-     (do #dbg (.read stream buffer 0 (.available stream))
-        (seq buffer)))))
-
 (defn chandler
   "Work with a shell channel streams.
   Occurs within with-channel-connection, hopefully.
@@ -94,18 +85,14 @@
 
   A note on the streams: in is where ssh output goes,
   and out is where to put ssh input, in keeping with java io."
-  [in out]
-  (let [in-chan (chan)
-        out-chan (chan)]
-    (go-loop [])))
+  [ssh-stream]
+  (go-loop [channel (chan)
+            buffer (make-array Byte/TYPE 1024)
+            char-count (.read ssh-stream buffer)]
+    (if-not (pos? char-count)
+      ())))
 
 (-> "/conf/ssh.edn"
     (eval-config)
     (session-from)
     (run-in-channel chandler))
-
-(do (println "connections:\t")
-    (clojure.pprint/pprint @connections)
-    (println "agents:\t")
-    (clojure.pprint/pprint @agents))
-

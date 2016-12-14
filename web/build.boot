@@ -1,6 +1,6 @@
 (set-env!
   :resource-paths #{"src" "spec"}
-  :dependencies '[[org.clojure/clojure "1.9.0-alpha13"]
+  :dependencies '[[org.clojure/clojure "1.9.0-alpha14"]
                   [org.clojure/core.async "0.2.395"]
                   [com.taoensso/timbre "4.7.4"]
                   [defun "0.3.0-alapha"]

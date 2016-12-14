@@ -3,9 +3,9 @@
             [clojure.core.async :as a :refer [chan thread >! <! >!! <!!
                                               close! timeout go go-loop]]
             [clojure.spec :as s]
-            [taoensso.timbre :as timbre
-             :refer [log trace debug info warn error fatal report logf tracef
-                     debugf infof warnf errorf fatalf reportf spy get-env]]
+            [taoensso.timbre :refer [log trace debug info warn error fatal
+                                     report logf tracef debugf infof warnf errorf
+                                     fatalf reportf spy get-env]]
             [util :as u]))
 
 ;; Host
@@ -46,8 +46,8 @@
   "conf map->jsch.Session"
   [{:keys [:pi-ssh/agent-options :pi-ssh/id-options
            :pi-ssh/host :pi-ssh/session-options]}]
-  (let [agent (doto (jsch/ssh-agent)
-                (jsch/add-identity id-options))
+  (let [agent (doto (jsch/ssh-agent (or agent-options {}))
+                (jsch/add-identity (or id-options {})))
         ;; Unfortunately, clj-ssh does not accept server-alive-interval
         ;; as an option. So we pull all the stuff out here to provide a
         ;; unified API. This also allows reasonable default values...
@@ -63,20 +63,18 @@
 
 (defn run-in-channel
   "Takes a session and a continuation: (fn \"handler\" [in out])
-  to execute with the channel open."
+  Allows specification of io streams of the session.
+  Executes the handler under a hopefully safely open channel."
   ([session handler] (run-in-channel session handler {}))
-  ([session handler {:keys [server-alive-interval in-stream out-stream]}]
-   (do
-     (doto session
-       )
-     (jsch/with-connection session
-       (let [channel (atom (jsch/open-channel session 'shell))
-             in (or in-stream (.getInputStream @channel))
-             out (or out-stream (.getOutputStream @channel))]
-         (jsch/with-channel-connection @channel
-           (debug "Channel connected, proceeding")
-           ;; Update the state of the connections
-           (handler in out)))))))
+  ([session handler {:keys [in-stream out-stream]}]
+   (jsch/with-connection session
+     (let [channel (jsch/open-channel session 'shell)
+           in (or in-stream (.getInputStream channel))
+           out (or out-stream (.getOutputStream channel))]
+       (jsch/with-channel-connection channel
+         (debug "Channel connected, proceeding")
+         ;; Update the state of the connections
+         (handler in out))))))
 
 (defn chandler
   "Work with a shell channel streams.

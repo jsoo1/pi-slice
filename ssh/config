@@ -1,0 +1,25 @@
+host *.amazonaws.com 54.186.253.144
+user pi-server
+
+Host pi-aws
+    HostName 54.186.253.144
+    IdentityFile /home/pi/.ssh/aws_new.pem
+    User ubuntu
+
+Host pi-aws-tunnel
+    HostName 54.186.253.144
+    User ubuntu
+    IdentityFile /home/pi/.ssh/aws_new.pem
+    RemoteForward 22222 localhost:13
+    ServerAliveInterval 30
+    ServerAliveCountMax 3
+
+Host service-tunnel
+    HostName 54.186.253.144
+    User ubuntu
+    Port 13
+    IdentityFile /home/pi/.ssh/aws_new.pem
+    RemoteForward 33333 localhost:9999
+    ServerAliveInterval 30
+    ServerAliveCountMax 3
+

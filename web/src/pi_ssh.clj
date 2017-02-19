@@ -1,12 +1,11 @@
 (ns pi-ssh
   (:require [clj-ssh.ssh :as jsch]
-            [clojure.core.async :as a :refer [chan thread >! <! >!! <!!
-                                              close! timeout go go-loop
-                                              put!]]
+            [clojure.core.async :as a :refer [chan thread timeout
+                                              go go-loop
+                                              >! <! >!! <!!
+                                              close! put!]]
             [clojure.spec :as s]
-            [taoensso.timbre :refer [log trace debug info warn error fatal
-                                     report logf tracef debugf infof warnf errorf
-                                     fatalf reportf spy get-env]]
+            [taoensso.timbre :as t :refer [log trace debug info warn error fatal]]
             [util :as u]))
 
 (defn eval-config
@@ -16,26 +15,38 @@
        (str (System/getProperty "user.dir"))
        (slurp)
        (read-string)
-       (do (debug "Read config:" conf-path))
        (eval)))
 
 (defn session-from
   "conf map->jsch.Session"
-  [{:keys [:pi-ssh/agent-options :pi-ssh/id-options
-           :pi-ssh/host :pi-ssh/session-options]}]
-  (let [agent (doto (jsch/ssh-agent (or agent-options {}))
-                (jsch/add-identity (or id-options {})))
+  [{:keys [:pi-ssh/agent-options
+           :pi-ssh/id-options
+           :pi-ssh/host
+           :pi-ssh/session-options]}]
+  (let [{:keys [:pi-ssh/use-system-ssh-agent]} agent-options
+        {:keys [:pi-ssh/private-key-path :pi-ssh/passphrase]} id-options
+        agent (doto (jsch/ssh-agent
+                     (if (empty? agent-options)
+                       {}
+                       {:use-system-ssh-agent use-system-ssh-agent}))
+                (jsch/add-identity (if (empty? id-options)
+                                     {}
+                                     {:private-key-path private-key-path
+                                      :passphrase passphrase})))
         ;; Unfortunately, clj-ssh does not accept server-alive-interval
         ;; as an option. So we pull all the stuff out here to provide a
         ;; unified API. This also allows reasonable default values...
-        {:keys [:port :username :strict-host-key-checking
-                :server-alive-interval]} session-options]
+        {:keys [:pi-ssh/port
+                :pi-ssh/username
+                :pi-ssh/strict-host-key-checking
+                :pi-ssh/server-alive-interval]} session-options]
     (doto (jsch/session agent
                         host
                         {:port (or port 22)
                          :username (or username "")
-                         :strict-host-key-checking (or strict-host-key-checking
-                                                       true)})
+                         :strict-host-key-checking
+                         (or strict-host-key-checking
+                             true)})
       (.setServerAliveInterval (or server-alive-interval 30000)))))
 
 (defn shell-streams
@@ -64,6 +75,7 @@
 ;;       (.read buffer 0 available)
 ;;       (>! channel (u/buffer->str buffer)))
 ;;     (recur buffer (.available in-stream))))
+
 (defn shell-out
   "Recursively read from PipedInputStream and place onto channel"
   ([in-chan in-stream] (shell-out in-chan in-stream (make-array Byte/TYPE 1024)))

@@ -20,11 +20,11 @@
 (s/def :pi-ssh/username string?)
 (s/def :pi-ssh/strict-host-key-checking keyword?)
 (s/def :pi-ssh/server-alive-interval integer?)
-(s/def :pi-ssh/session-options
-  (s/keys :req [:pi-ssh/username]
-           :opt [:pi-ssh/port
-                    :pi-ssh/server-alive-interval
-                    :pi-ssh/strict-host-key-checking]))
+(s/def :pi-ssh/session-options (s/keys
+                                :req [:pi-ssh/username]
+                                :opt [:pi-ssh/port
+                                      :pi-ssh/server-alive-interval
+                                      :pi-ssh/strict-host-key-checking]))
 
 ;; All together in a configuration map
 (s/def :pi-ssh/conf-map

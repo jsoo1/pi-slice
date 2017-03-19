@@ -1,12 +1,6 @@
 (ns pi-ssh
   (:require [clj-ssh.ssh :as jsch]
-            [clojure.core.async :as a :refer [chan thread timeout
-                                              go go-loop
-                                              >! <! >!! <!!
-                                              close! put!]]
-            [clojure.spec :as s]
-            [taoensso.timbre :as t :refer [log trace debug info warn error fatal]]
-            [util :as u]))
+            [clojure.spec :as s]))
 
 (defn eval-config
   "conf-path->conf-map"
@@ -45,8 +39,7 @@
                         {:port (or port 22)
                          :username (or username "")
                          :strict-host-key-checking
-                         (or strict-host-key-checking
-                             true)})
+                         (or strict-host-key-checking true)})
       (.setServerAliveInterval (or server-alive-interval 30000)))))
 
 (defn shell-streams
@@ -57,58 +50,8 @@
   ([session {:keys [in-stream out-stream]}]
    (jsch/with-connection session
      (let [channel (jsch/open-channel session 'shell)
-           in (or in-stream (.getInputStream channel))
-           out (or out-stream (.getOutputStream channel))]
+           ^PipedInputStream in (or in-stream (.getInputStream channel))
+           ^PipedOutputStream out (or out-stream (.getOutputStream channel))]
        (jsch/with-channel-connection channel
-         (debug "Channel connected, proceeding")
          ;; Update the state of the connections
-         {:in in :out out })))))
-
-;; (defn stream-in
-;;   "Work with a shell channel stream.
-;;   Occurs within with-channel-connection, hopefully.
-;;   <PipedInputStream>ssh-stream."
-;;   [channel in-stream]
-;;   (go-loop [buffer (make-array Byte/TYPE 1024)
-;;             available (.available in-stream)]
-;;     (when (pos? available)
-;;       (.read buffer 0 available)
-;;       (>! channel (u/buffer->str buffer)))
-;;     (recur buffer (.available in-stream))))
-
-(defn shell-out
-  "Recursively read from PipedInputStream and place onto channel"
-  ([in-chan in-stream] (shell-out in-chan in-stream (make-array Byte/TYPE 1024)))
-  ([in-chan in-stream buffer]
-   (let [available (.available in-stream)]
-     (if (pos? available)
-       (put! in-chan
-             (.read buffer 0 available)
-             #(shell-out in-chan in-stream buffer))
-       (recur in-chan in-stream buffer)))))
-;; (defn stream-out
-;;   "Work with a shell channel stream.
-;;   Occurs within with-channel-connection, hopefully.
-;;   <PipedOutputStream>ssh-stream"
-;;   [s ssh-stream]
-;;   (go-loop []))
-
-(let [shell-in-chan (chan)
-      shell-out-chan (chan)
-      conn-chan (go
-                  (-> (eval-config "/conf/ssh_aws.edn")
-                      (s/conform :pi-ssh/conf-map)
-                      (session-from)
-                      (shell-streams)))]
-
-  (go
-    (let [{:keys [in out]} (<! conn-chan)]
-      (shell-out shell-in-chan in)
-      (go
-        (info (<! shell-in-chan)))
-
-      (go-loop [user-input (read-line)]
-        (doto out
-          (.flush)
-          (.write (bytes user-input) 0 (count user-input)))
-        (recur (read-line)))));; Stub of stuff to do potentially with the output from ssh chan)
+         {::in in ::out out })))))

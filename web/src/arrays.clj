@@ -28,32 +28,3 @@
          (map bounds)
          (apply (partial map vector))
          (map reverse))))
-
-;; Spec Tutorial
-(s/def ::name-or-id (s/or :name string?
-                          :id int?))
-
-(s/def ::small-odd (s/and odd? #(< 0 % 10)))
-
-(s/def ::suit #{::heart ::spade ::diamond ::club})
-
-(s/explain ::suit ::heart)
-
-(-> (s/explain-data ::name-or-id :nested-arrays/heart)
-    (clojure.pprint/pprint))
-
-(def email-regex #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$")
-(s/def ::email-type (s/and string? #(re-matches email-regex %)))
-(s/def ::acctid int?)
-(s/def ::last-name string?)
-(s/def ::email ::email-type)
-
-(s/def ::person (s/keys :req [::first-name ::last-name ::email]
-                        :opt [::phone]))
-(s/def :unq/person
-  (s/keys :req-un [::first-name ::last-name ::email]
-          :opt-un [::phone]))
-
-(defrecord Person [first-name last-name email phone])
-(s/explain :unq/person (->Person "Elon" nil nil nil))
-(s/explain :unq/person (->Person "Elon" "Musk" "elon@example.com" nil))

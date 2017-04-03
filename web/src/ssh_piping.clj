@@ -19,15 +19,18 @@
        (do (.read buffer 0 available)
            (a/put! c (u/buffer->str buffer) #(shell-out c stream buffer)))))))
 
+(future)
 (defn user-in
   "Recursively readline from user and place onto PipedOutputStream"
   [c stream]
-  (let [line (read-line)]
+  (go-loop [line (read-line)]
     (when line
-           (doto stream
-             (.flush)
-             (.write (bytes user-in) 0 (count user-in))))
-    (a/put! c line #(user-in c stream))))
+      ;; (doto stream
+      ;;   (.flush)
+      ;;   (.write (.getBytes line) 0 (count line)))
+      (println line)
+      )
+    (recur (read-line))))
 
 (let [conn-chan (go (->> (pi-ssh/eval-config "/conf/ssh_aws.edn")
                          (s/conform :pi-ssh/conf-map)
@@ -39,6 +42,7 @@
 
   (a/take! conn-chan (fn [{in :pi-ssh/in out :pi-ssh/out}]
                        (shell-out ssh-out-c in)
+                       ;; TODO busted
                        #dbg
                        (user-in user-in-c out))
            ;; false

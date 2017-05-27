@@ -1,5 +1,6 @@
 (ns pi-ssh-spec
-  (:require [clojure.spec :as s]))
+  (:require [clojure.spec :as s])
+  (:import (java.io PipedInputStream PipedOutputStream)))
 
 ;; Host
 (s/def :pi-ssh/host string?)
@@ -30,3 +31,8 @@
 (s/def :pi-ssh/conf-map
   (s/keys :req [:pi-ssh/host :pi-ssh/session-options]
           :opt [:pi-ssh/agent-options :pi-ssh/id-options]))
+
+;; JSCH in/out streams
+(s/def :pi-ssh/in-stream #(= (class %) PipedInputStream))
+(s/def :pi-ssh/out-stream #(= (class %) PipedOutputStream))
+(s/def :pi-ssh/streams (s/keys :req [:pi-ssh/in-stream :pi-ssh/out-stream]))

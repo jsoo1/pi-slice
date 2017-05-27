@@ -54,4 +54,4 @@
            ^PipedOutputStream out (or out-stream (.getOutputStream channel))]
        (jsch/with-channel-connection channel
          ;; Update the state of the connections
-         {::in in ::out out })))))
+         {::in-stream in ::out-stream out})))))
